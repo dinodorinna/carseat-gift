@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import { ProductProps } from "./types/product";
 import Header from "./components/header";
 import LeaderBanner from "./components/leaderBanner";
+import NameGateModal from "./components/nameGateModal";
 import NoticeModal from "./components/noticeModal";
 import ProductCard from "./components/productCard";
 import UserInput from "./components/userInput";
 import { initialProducts } from "./data/mockProducts";
 import { ref, onValue, set } from "firebase/database";
 import { db } from "./lib/firebase";
+
+const USERNAME_STORAGE_KEY = "carseat-gift:username";
 
 export default function CarSeatSplitApp() {
   const [currentUser, setCurrentUser] = useState<string>("");
@@ -22,6 +25,12 @@ export default function CarSeatSplitApp() {
   useEffect(() => {
     setIsMounted(true);
     if (typeof window === "undefined") return;
+
+    // ชื่อจะถูกล็อกไว้ใน localStorage ตั้งแต่ครั้งแรกที่กรอก แก้ไขภายหลังไม่ได้
+    const savedName = window.localStorage.getItem(USERNAME_STORAGE_KEY);
+    if (savedName) {
+      setCurrentUser(savedName);
+    }
 
     const productsRef = ref(db, "products");
 
@@ -52,20 +61,31 @@ export default function CarSeatSplitApp() {
     }
 
     const updatedProducts = products.map((p) => {
+      const currentInterested = p.interested || [];
+
       if (p.id === productId) {
-        const currentInterested = p.interested || [];
         const exists = currentInterested.includes(currentUser);
         const updated = exists
           ? currentInterested.filter((name) => name !== currentUser)
           : [...currentInterested, currentUser];
         return { ...p, interested: updated };
       }
-      return p;
+
+      // 1 คนเลือกได้แค่ 1 รุ่นเท่านั้น เลยต้องลบชื่อออกจากรุ่นอื่นทั้งหมดด้วย
+      return {
+        ...p,
+        interested: currentInterested.filter((name) => name !== currentUser),
+      };
     });
 
     set(ref(db, "products"), updatedProducts).catch((err) =>
       console.error("Firebase Write Error:", err),
     );
+  };
+
+  const handleNameSubmit = (name: string) => {
+    window.localStorage.setItem(USERNAME_STORAGE_KEY, name);
+    setCurrentUser(name);
   };
 
   const leadingProduct =
@@ -92,7 +112,7 @@ export default function CarSeatSplitApp() {
       <Header />
 
       <div className="mx-auto -mt-6 max-w-xl px-4">
-        <UserInput currentUser={currentUser} onUserChange={setCurrentUser} />
+        <UserInput currentUser={currentUser} />
 
         <LeaderBanner leadingProduct={leadingProduct} />
 
@@ -113,6 +133,8 @@ export default function CarSeatSplitApp() {
         isOpen={isNoticeOpen}
         onClose={() => setNoticeOpen(false)}
       />
+
+      <NameGateModal isOpen={!currentUser} onSubmit={handleNameSubmit} />
     </main>
   );
 }
