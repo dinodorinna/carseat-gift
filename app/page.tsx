@@ -53,16 +53,16 @@ export default function CarSeatSplitApp() {
 
     const updatedProducts = products.map((p) => {
       if (p.id === productId) {
-        const exists = p.interested.includes(currentUser);
+        const currentInterested = p.interested || [];
+        const exists = currentInterested.includes(currentUser);
         const updated = exists
-          ? p.interested.filter((name) => name !== currentUser)
-          : [...p.interested, currentUser];
+          ? currentInterested.filter((name) => name !== currentUser)
+          : [...currentInterested, currentUser];
         return { ...p, interested: updated };
       }
       return p;
     });
 
-    // บันทึกกลับขึ้น Firebase (เพื่อนคนอื่นจะได้ข้อมูลใหม่ทันที)
     set(ref(db, "products"), updatedProducts).catch((err) =>
       console.error("Firebase Write Error:", err),
     );

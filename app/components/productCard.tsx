@@ -17,12 +17,18 @@ export default function ProductCard({
   onToggleInterest,
 }: ProductCardProps) {
   const [isLightboxOpen, setLightboxOpen] = useState(false);
-  const voteCount = product?.interested?.length;
+
+  const interestedList = product?.interested || [];
+  const featuresList = product?.features || [];
+  const imagesList = product?.images || [];
+
+  const voteCount = interestedList.length;
   const pricePerPerson =
     voteCount > 0
-      ? Math.round(product.totalPrice / voteCount)
-      : product.totalPrice;
-  const isJoined = product?.interested?.includes(currentUser);
+      ? Math.round((product?.totalPrice || 0) / voteCount)
+      : product?.totalPrice || 0;
+
+  const isJoined = currentUser ? interestedList.includes(currentUser) : false;
 
   return (
     <div
@@ -40,19 +46,21 @@ export default function ProductCard({
           aria-label={`ดูรูป ${product.name}`}
           className="group relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-slate-100 sm:h-28 sm:w-28"
         >
-          <Image
-            src={product.images[0]}
-            alt={product.name}
-            fill
-            sizes="112px"
-            className="object-cover transition-transform duration-200 group-hover:scale-105"
-          />
+          {imagesList[0] && (
+            <Image
+              src={imagesList[0]}
+              alt={product.name}
+              fill
+              sizes="112px"
+              className="object-cover transition-transform duration-200 group-hover:scale-105"
+            />
+          )}
           <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-lg text-white opacity-0 transition-all duration-200 group-hover:bg-black/30 group-hover:opacity-100">
             🔍
           </span>
-          {product.images.length > 1 && (
+          {imagesList.length > 1 && (
             <span className="absolute bottom-1 right-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] font-semibold text-white">
-              +{product.images.length - 1}
+              +{imagesList.length - 1}
             </span>
           )}
         </button>
@@ -71,14 +79,16 @@ export default function ProductCard({
 
           <div className="flex items-baseline gap-1">
             <span
-              className={`text-xl font-bold ${isJoined ? "text-blue-600" : "text-emerald-600"}`}
+              className={`text-xl font-bold ${
+                isJoined ? "text-blue-600" : "text-emerald-600"
+              }`}
             >
               ฿{pricePerPerson.toLocaleString()}
             </span>
             <span className="text-xs text-slate-500">/ คน</span>
           </div>
           <div className="text-[11px] text-slate-400">
-            ราคารวม {product.totalPrice.toLocaleString()} บาท
+            ราคารวม {product.totalPrice?.toLocaleString()} บาท
           </div>
           <div className="mt-1 text-[11px] text-slate-400">
             👥 สนใจแล้ว {voteCount} คน
@@ -88,7 +98,7 @@ export default function ProductCard({
 
       {/* Features */}
       <ul className="mb-5 mt-4 space-y-2 text-xs text-slate-600">
-        {product.features.map((feature, idx) => (
+        {featuresList.map((feature, idx) => (
           <li key={idx} className="flex items-center gap-2">
             <span className="text-emerald-500">✓</span> {feature}
           </li>
@@ -96,21 +106,23 @@ export default function ProductCard({
       </ul>
 
       {/* Manual */}
-      <a
-        href={product.manual}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mb-5 flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 py-2 text-xs font-semibold text-slate-500 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700"
-      >
-        📄 คู่มือการใช้งาน
-      </a>
+      {product.manual && (
+        <a
+          href={product.manual}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-5 flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 py-2 text-xs font-semibold text-slate-500 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700"
+        >
+          📄 คู่มือการใช้งาน
+        </a>
+      )}
 
       {/* Interested Members List */}
       <div className="mb-5 border-t border-dashed border-slate-100 pt-3">
         <div className="mb-2 text-xs text-slate-400">เพื่อนที่สนใจรุ่นนี้:</div>
         <div className="flex flex-wrap gap-1.5">
           {voteCount > 0 ? (
-            product?.interested?.map((name, idx) => (
+            interestedList.map((name, idx) => (
               <span
                 key={idx}
                 className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs ${
@@ -143,7 +155,7 @@ export default function ProductCard({
       </button>
 
       <ImageLightbox
-        images={product.images}
+        images={imagesList}
         alt={product.name}
         isOpen={isLightboxOpen}
         onClose={() => setLightboxOpen(false)}
