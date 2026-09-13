@@ -17,12 +17,12 @@ export default function ProductCard({
   onToggleInterest,
 }: ProductCardProps) {
   const [isLightboxOpen, setLightboxOpen] = useState(false);
-  const voteCount = product.interested.length;
+  const voteCount = product?.interested?.length;
   const pricePerPerson =
     voteCount > 0
       ? Math.round(product.totalPrice / voteCount)
       : product.totalPrice;
-  const isJoined = product.interested.includes(currentUser);
+  const isJoined = product?.interested?.includes(currentUser);
 
   return (
     <div
@@ -107,12 +107,10 @@ export default function ProductCard({
 
       {/* Interested Members List */}
       <div className="mb-5 border-t border-dashed border-slate-100 pt-3">
-        <div className="mb-2 text-xs text-slate-400">
-          เพื่อนที่สนใจรุ่นนี้:
-        </div>
+        <div className="mb-2 text-xs text-slate-400">เพื่อนที่สนใจรุ่นนี้:</div>
         <div className="flex flex-wrap gap-1.5">
           {voteCount > 0 ? (
-            product.interested.map((name, idx) => (
+            product?.interested?.map((name, idx) => (
               <span
                 key={idx}
                 className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs ${

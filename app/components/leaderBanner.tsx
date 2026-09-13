@@ -5,10 +5,11 @@ interface LeaderBannerProps {
 }
 
 export default function LeaderBanner({ leadingProduct }: LeaderBannerProps) {
-  if (!leadingProduct || leadingProduct.interested.length === 0) return null;
+  const interestedList = leadingProduct?.interested || [];
+  if (!leadingProduct || interestedList.length === 0) return null;
 
   const pricePerPerson = Math.round(
-    leadingProduct.totalPrice / leadingProduct.interested.length,
+    leadingProduct.totalPrice / (interestedList.length ?? 0),
   );
 
   return (
@@ -19,7 +20,7 @@ export default function LeaderBanner({ leadingProduct }: LeaderBannerProps) {
           แนวโน้มตอนนี้: {leadingProduct.name}
         </span>
         <span className="text-xs text-blue-700">
-          คนสนใจมากที่สุด {leadingProduct.interested.length} คน (ตกคนละ{" "}
+          คนสนใจมากที่สุด {interestedList?.length ?? 0} คน (ตกคนละ{" "}
           <b>{pricePerPerson.toLocaleString()} บาท</b>)
         </span>
       </div>
