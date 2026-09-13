@@ -16,7 +16,7 @@ const USERNAME_STORAGE_KEY = "carseat-gift:username";
 
 export default function CarSeatSplitApp() {
   const [currentUser, setCurrentUser] = useState<string>("");
-  // ให้ค่าเริ่มต้นเป็น Array ว่างก่อนเพื่อป้องกัน Hydration Mismatch บน Vercel
+
   const [products, setProducts] = useState<ProductProps[]>([]);
   const [isNoticeOpen, setNoticeOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
