@@ -3,12 +3,13 @@
 import { useState } from "react";
 import Image from "next/image";
 import { ProductProps } from "../types/product";
+import { normalizeEntries } from "../lib/interested";
 import ImageLightbox from "./imageLightbox";
 
 interface ProductCardProps {
   product: ProductProps;
   currentUser: string;
-  onToggleInterest: (productId: number) => void;
+  onToggleInterest: (productId: number, color?: string) => void;
 }
 
 export default function ProductCard({
@@ -18,9 +19,10 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [isLightboxOpen, setLightboxOpen] = useState(false);
 
-  const interestedList = product?.interested || [];
+  const interestedList = normalizeEntries(product?.interested);
   const featuresList = product?.features || [];
   const imagesList = product?.images || [];
+  const colorList = product?.color || [];
 
   const voteCount = interestedList.length;
   const pricePerPerson =
@@ -28,7 +30,15 @@ export default function ProductCard({
       ? Math.round((product?.totalPrice || 0) / voteCount)
       : product?.totalPrice || 0;
 
-  const isJoined = currentUser ? interestedList.includes(currentUser) : false;
+  const myEntry = currentUser
+    ? interestedList.find((entry) => entry.name === currentUser)
+    : undefined;
+  const isJoined = Boolean(myEntry);
+
+  const [selectedColor, setSelectedColor] = useState<string | undefined>(
+    () => colorList[0]?.name,
+  );
+  const activeColor = myEntry?.color ?? selectedColor;
 
   return (
     <div
@@ -96,8 +106,60 @@ export default function ProductCard({
         </div>
       </div>
 
+      {/* Colors */}
+      {colorList.length > 0 && (
+        <div className="mb-4 mt-4 flex items-start gap-3">
+          <span className="mt-1.5 shrink-0 text-xs font-semibold text-slate-500">
+            🎨 สี:
+          </span>
+          <div className="flex flex-wrap gap-3">
+            {colorList.map((option) => {
+              // ข้อมูลเก่าจาก Firebase อาจยังเป็น string ธรรมดา (ไม่มี swatch)
+              const isLegacyFormat = typeof option === "string";
+              const name = isLegacyFormat ? option : option.name;
+              const swatch = isLegacyFormat ? undefined : option.swatch;
+              const isSelected = activeColor === name;
+
+              return (
+                <button
+                  key={name}
+                  type="button"
+                  disabled={isJoined}
+                  onClick={() => setSelectedColor(name)}
+                  aria-label={`เลือกสี ${name}`}
+                  className="flex flex-col items-center gap-1 disabled:cursor-not-allowed"
+                >
+                  <div
+                    className={`relative h-9 w-9 overflow-hidden rounded-full border-2 bg-slate-100 transition-all ${
+                      isSelected
+                        ? "border-blue-500 ring-2 ring-blue-500/30"
+                        : "border-slate-200"
+                    }`}
+                  >
+                    {swatch && (
+                      <Image
+                        src={swatch}
+                        alt={name}
+                        fill
+                        sizes="36px"
+                        className="object-cover"
+                      />
+                    )}
+                  </div>
+                  <span
+                    className={`text-[10px] ${isSelected ? "font-semibold text-blue-600" : "text-slate-500"}`}
+                  >
+                    {name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Features */}
-      <ul className="mb-5 mt-4 space-y-2 text-xs text-slate-600">
+      <ul className="mb-5 space-y-2 text-xs text-slate-600">
         {featuresList.map((feature, idx) => (
           <li key={idx} className="flex items-center gap-2">
             <span className="text-emerald-500">✓</span> {feature}
@@ -122,16 +184,17 @@ export default function ProductCard({
         <div className="mb-2 text-xs text-slate-400">เพื่อนที่สนใจรุ่นนี้:</div>
         <div className="flex flex-wrap gap-1.5">
           {voteCount > 0 ? (
-            interestedList.map((name, idx) => (
+            interestedList.map((entry, idx) => (
               <span
                 key={idx}
                 className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs ${
-                  name === currentUser
+                  entry.name === currentUser
                     ? "bg-blue-100 font-semibold text-blue-700"
                     : "bg-slate-100 text-slate-700"
                 }`}
               >
-                😊 {name}
+                😊 {entry.name}
+                {entry.color ? ` (${entry.color})` : ""}
               </span>
             ))
           ) : (
@@ -144,7 +207,7 @@ export default function ProductCard({
 
       {/* Action Button */}
       <button
-        onClick={() => onToggleInterest(product.id)}
+        onClick={() => onToggleInterest(product.id, selectedColor)}
         className={`w-full rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.98] ${
           isJoined
             ? "border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"

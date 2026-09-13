@@ -13,7 +13,10 @@ export const initialProducts: ProductProps[] = [
       "ที่พักเท้า/ขานิรภัย",
       "รองรับ ISOFIX & Belt",
     ],
-    color: ["Navy blue", "Silver Grey"],
+    color: [
+      { name: "Navy Blue", swatch: "/images/colors/g408-navy.avif" },
+      { name: "Silver Grey", swatch: "/images/colors/g408-gray.avif" },
+    ],
     totalPrice: 4990,
     interested: [],
     images: [
@@ -36,7 +39,12 @@ export const initialProducts: ProductProps[] = [
       "ผ้าเย็นสบาย นุ่มละมุน",
       "รองรับ ISOFIX & Belt & LATCH",
     ],
-    color: ["Graphite Black"],
+    color: [
+      {
+        name: "Graphite Black",
+        swatch: "/images/colors/g408-graphite-black.avif",
+      },
+    ],
     totalPrice: 3490,
     interested: [],
     images: [

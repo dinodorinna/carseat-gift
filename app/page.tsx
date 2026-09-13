@@ -9,6 +9,7 @@ import NoticeModal from "./components/noticeModal";
 import ProductCard from "./components/productCard";
 import UserInput from "./components/userInput";
 import { initialProducts } from "./data/mockProducts";
+import { normalizeEntries } from "./lib/interested";
 import { ref, onValue, set } from "firebase/database";
 import { db } from "./lib/firebase";
 
@@ -54,27 +55,31 @@ export default function CarSeatSplitApp() {
   }, []);
 
   // 2. ฟังก์ชันอัปเดตข้อมูลขึ้น Firebase เมื่อเพื่อนกดปุ่ม
-  const handleToggleInterest = (productId: number) => {
+  const handleToggleInterest = (productId: number, color?: string) => {
     if (!currentUser.trim()) {
       setNoticeOpen(true);
       return;
     }
 
     const updatedProducts = products.map((p) => {
-      const currentInterested = p.interested || [];
+      const currentInterested = normalizeEntries(p.interested);
 
       if (p.id === productId) {
-        const exists = currentInterested.includes(currentUser);
+        const exists = currentInterested.some(
+          (entry) => entry.name === currentUser,
+        );
         const updated = exists
-          ? currentInterested.filter((name) => name !== currentUser)
-          : [...currentInterested, currentUser];
+          ? currentInterested.filter((entry) => entry.name !== currentUser)
+          : [...currentInterested, { name: currentUser, color }];
         return { ...p, interested: updated };
       }
 
       // 1 คนเลือกได้แค่ 1 รุ่นเท่านั้น เลยต้องลบชื่อออกจากรุ่นอื่นทั้งหมดด้วย
       return {
         ...p,
-        interested: currentInterested.filter((name) => name !== currentUser),
+        interested: currentInterested.filter(
+          (entry) => entry.name !== currentUser,
+        ),
       };
     });
 
