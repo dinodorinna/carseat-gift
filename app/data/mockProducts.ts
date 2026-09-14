@@ -17,7 +17,7 @@ export const initialProducts: ProductProps[] = [
       { name: "Navy Blue", swatch: "/images/colors/g408-navy.avif" },
       { name: "Silver Grey", swatch: "/images/colors/g408-gray.avif" },
     ],
-    totalPrice: 4990,
+    totalPrice: 5340,
     interested: [],
     images: [
       "/images/alfi-cosco-9/alfi-cosco-9-1.png",
@@ -45,7 +45,7 @@ export const initialProducts: ProductProps[] = [
         swatch: "/images/colors/g408-graphite-black.avif",
       },
     ],
-    totalPrice: 3490,
+    totalPrice: 3840,
     interested: [],
     images: [
       "/images/alfi-fiji-7-ultra/alfi-fiji-7-1.png",
